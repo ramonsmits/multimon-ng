@@ -589,10 +589,22 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
 */
 
 // Implemented bierviltje code from ticket: https://github.com/EliasOenal/multimon-ng/issues/123# 
+
+// FLEX     |1600/2/K/A|11.056|002029568 000126999 000123136|ALN|A1 11136 Rit 136695 Wendelmoet Claesdochterlaan Monnickendam
+
         static char pt_out[4096] = { 0 };
-        int pt_offset = sprintf(pt_out, "FLEX|%04i-%02i-%02i %02i:%02i:%02i|%i/%i/%c/%c|%02i.%03i|%09lld",
-                        gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
-                        flex->Sync.baud, flex->Sync.levels, frag_flag, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
+        int pt_offset = sprintf(
+			pt_out,
+			"FLEX     |%i/%i|%02i.%03i.%c|..|.",
+                        flex->Sync.baud,
+			flex->Sync.levels,
+			//frag_flag,
+			flex->FIW.cycleno,
+			flex->FIW.frameno,
+			PhaseNo
+			);
+
+	pt_offset += sprintf(pt_out + pt_offset, "|ALN|-----|%s|%10lld", message, flex->Decode.capcode);	
 
         if(flex_groupmessage == 1) {
                 int groupbit = flex->Decode.capcode-2029568;
@@ -602,7 +614,7 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
                 for(int g = 1; g <= endpoint;g++)
                 {
                         verbprintf(1, "FLEX Group message output: Groupbit: %i Total Capcodes; %i; index %i; Capcode: [%09lld]\n", groupbit, endpoint, g, flex->GroupHandler.GroupCodes[groupbit][g]);
-                        pt_offset += sprintf(pt_out + pt_offset, " %09lld", flex->GroupHandler.GroupCodes[groupbit][g]);
+                        pt_offset += sprintf(pt_out + pt_offset, " %10lld", flex->GroupHandler.GroupCodes[groupbit][g]);
                 }
 
                 // reset the value
@@ -610,7 +622,8 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
                 flex->GroupHandler.GroupFrame[groupbit] = -1;
                 flex->GroupHandler.GroupCycle[groupbit] = -1;
         } 
-        pt_offset += sprintf(pt_out + pt_offset, "|ALN|%s\n", message);
+	sprintf(pt_out + pt_offset, "\n");
+       
         verbprintf(0, "%s", pt_out);
 }
 

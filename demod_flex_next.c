@@ -617,6 +617,9 @@ static void parse_alphanumeric(struct Flex_Next * flex, unsigned int * phaseptr,
         }
         message[currentChar] = '\0';
 
+	verbprintf(0, message);
+	verbprintf(0, "|");
+
 // Implemented bierviltje code from ticket: https://github.com/EliasOenal/multimon-ng/issues/123# 
         if(flex_groupmessage == 1) {
                 int endpoint = flex->GroupHandler.GroupCodes[flex_groupbit][CAPCODES_INDEX];
@@ -631,7 +634,6 @@ static void parse_alphanumeric(struct Flex_Next * flex, unsigned int * phaseptr,
                 flex->GroupHandler.GroupFrame[flex_groupbit] = -1;
                 flex->GroupHandler.GroupCycle[flex_groupbit] = -1;
         } 
-    verbprintf(0, message);
 }
 
 static void parse_numeric(struct Flex_Next * flex, unsigned int * phaseptr, int j) {
@@ -912,7 +914,24 @@ static void decode_phase(struct Flex_Next * flex, char PhaseNo) {
     if (is_tone_page(flex))
       mw1 = len = 0;
 
-    verbprintf(0, "FLEX_NEXT|%i/%i|%02i.%03i.%c|%010" PRId64 "|%c%c|%1d|", flex->Sync.baud, flex->Sync.levels, flex->FIW.cycleno, flex->FIW.frameno, PhaseNo, flex->Decode.capcode, (flex->Decode.long_address ? 'L' : 'S'), (flex_groupmessage ? 'G' : 'S'), flex->Decode.type);
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    verbprintf(
+	0,
+	//         1  2  3    4    5             7  8 9
+	"FLEX_NEXT|%i/%i|%02i.%03i.%c|%c%c|%1d|",
+	flex->Sync.baud,				// 1
+	flex->Sync.levels,				// 2
+	flex->FIW.cycleno,				// 3
+	flex->FIW.frameno,				// 4
+	PhaseNo,					// 5
+	//flex->Decode.capcode,				// 6
+	(flex->Decode.long_address ? 'L' : 'S'),	// 7
+	(flex_groupmessage ? 'G' : 'S'),		// 8
+	flex->Decode.type				// 9
+	);
+
+
     // Check if this is an alpha message
     if (is_alphanumeric_page(flex)) {
       verbprintf(0, "ALN|");
@@ -934,6 +953,10 @@ static void decode_phase(struct Flex_Next * flex, char PhaseNo) {
       verbprintf(0, "UNK|");
       parse_binary(flex, phaseptr, mw1, len);
     }
+
+	verbprintf(0, "|%010" PRId64,  flex->Decode.capcode);
+
+
     verbprintf(0, "\n");
 
     // long addresses eat 2 aw and 2 vw, so skip the next aw-vw pair
