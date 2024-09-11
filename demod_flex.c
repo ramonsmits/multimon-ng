@@ -23,6 +23,8 @@
  */
 /*
  *  Modification made by Ramon Smits (ramon@ramonsmits.com)
+ *   - PR #223 Method `decode_phase` field `flex_groupmessage` moved into for, as it seems that it needs to be determined per page
+ *  Modification made by Ramon Smits (ramon@ramonsmits.com)
  *   - PR #221 Estimate the total offset based on the estimated passed full cycles
  *  Modification made by bierviltje and implemented by Bruce Quinton (Zanoroy@gmail.com)
  *   - Issue #123 created by bierviltje (https://github.com/bierviltje) - Feature request: FLEX: put group messages in an array/list
@@ -814,10 +816,11 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
 
   verbprintf(3, "FLEX: BlockInfoWord: (Phase %c) BIW:%08X AW:%02i-%02i (%i pages)\n", PhaseNo, biw, aoffset, voffset, voffset-aoffset);
 
-  int flex_groupmessage = 0;
 
   // Iterate through pages and dispatch to appropriate handler
   for (i = aoffset; i < voffset; i++) {
+    int flex_groupmessage = 0;
+
     j = voffset+i-aoffset;    // Start of vector field for address @ i
 
     if (phaseptr[i] == 0x00000000 ||
