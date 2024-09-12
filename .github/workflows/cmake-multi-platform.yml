@@ -67,7 +67,7 @@ jobs:
 
     - name: SemVer
       id: semver
-      uses: paulhatch/semantic-version@v5
+      uses: paulhatch/semantic-version@v5.4.0
 
     - name: Replace tokens
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
