@@ -70,7 +70,7 @@ jobs:
       uses: paulhatch/semantic-version@v5.4.0
       with:
        tag_prefix: ""
-       debug: false
+       debug: true
 
     - name: Replace tokens
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
