@@ -74,8 +74,8 @@ jobs:
       with:
         tag_prefix: ""
         debug: true
-        use_branches: true
-        version_from_branch: true
+#        use_branches: true
+#        version_from_branch: true
 
     - name: Replace tokens
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
