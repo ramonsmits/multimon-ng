@@ -91,6 +91,7 @@ static int integer_only = true;
 static bool dont_flush = false;
 static bool is_startline = true;
 static int timestamp = 0;
+static int utc = 0;
 static char *label = NULL;
 
 extern bool fms_justhex;
@@ -132,7 +133,10 @@ void _verbprintf(int verb_level, const char *fmt, ...)
         
         if (timestamp) {
             t = time(NULL);
-            tm_info = localtime(&t);
+            if(utc)
+              tm_info = gmtime(&t);
+            else
+              tm_info = localtime(&t);
             strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
             fprintf(stdout, "%s: ", time_buf);
         }
@@ -617,6 +621,7 @@ int main(int argc, char *argv[])
     static struct option long_options[] =
       {
         {"timestamp", no_argument, &timestamp, 1},
+        {"utc", no_argument, &utc, 1},
         {"label", required_argument, NULL, 'l'},
         {"charset", required_argument, NULL, 'C'},
         {0, 0, 0, 0}
