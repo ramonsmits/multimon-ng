@@ -74,6 +74,7 @@ jobs:
       with:
         tag_prefix: ""
         version_format: "${major}.${minor}.${patch}-prerelease.${increment}"
+        namespace: ${{ env.sha_short }}
         debug: true
 #        use_branches: true
 #        version_from_branch: true
