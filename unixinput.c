@@ -138,7 +138,7 @@ void _verbprintf(int verb_level, const char *fmt, ...)
                 timespec_get(&ts, TIME_UTC);
                 //RFC3339Nano
                 strftime(time_buf, sizeof time_buf, "%FT%T", gmtime(&ts.tv_sec)); //2024-09-13T20:35:30
-                fprintf(stdout, "%s.%09ld: ", time_buf, ts.tv_nsec); //2024-09-13T20:35:30.156337253 
+                fprintf(stdout, "%s.%06ld: ", time_buf, ts.tv_nsec/1000); //2024-09-13T20:35:30.156337
             }
             else
             {
