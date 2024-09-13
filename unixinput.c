@@ -24,6 +24,8 @@
 
 /* ---------------------------------------------------------------------- */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "multimon.h"
 #include <stdio.h>
 #include <stdarg.h>
