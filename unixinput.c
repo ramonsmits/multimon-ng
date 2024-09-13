@@ -24,8 +24,6 @@
 
 /* ---------------------------------------------------------------------- */
 
-#define _POSIX_C_SOURCE 200809L
-
 #include "multimon.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -136,7 +134,6 @@ void _verbprintf(int verb_level, const char *fmt, ...)
             {
                 struct timespec ts;
                 timespec_get(&ts, TIME_UTC);
-                //RFC3339Nano
                 strftime(time_buf, sizeof time_buf, "%FT%T", gmtime(&ts.tv_sec)); //2024-09-13T20:35:30
                 fprintf(stdout, "%s.%06ld: ", time_buf, ts.tv_nsec/1000); //2024-09-13T20:35:30.156337
             }
