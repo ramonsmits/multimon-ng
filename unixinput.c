@@ -118,8 +118,6 @@ void quit(void);
 void _verbprintf(int verb_level, const char *fmt, ...)
 {
 	char time_buf[20];
-	time_t t;
-	struct tm* tm_info;
 
     if (verb_level > verbose_level)
         return;
@@ -132,13 +130,23 @@ void _verbprintf(int verb_level, const char *fmt, ...)
             fprintf(stdout, "%s: ", label);
         
         if (timestamp) {
-            t = time(NULL);
             if(utc)
-              tm_info = gmtime(&t);
+            {
+                struct timespec ts;
+                timespec_get(&ts, TIME_UTC);
+                //RFC3339Nano
+                strftime(time_buf, sizeof time_buf, "%FT%T", gmtime(&ts.tv_sec)); //2024-09-13T20:35:30
+                fprintf(stdout, "%s.%09ld: ", time_buf, ts.tv_nsec); //2024-09-13T20:35:30.156337253 
+            }
             else
-              tm_info = localtime(&t);
-            strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
-            fprintf(stdout, "%s: ", time_buf);
+            {
+                time_t t;
+                struct tm* tm_info;
+                t = time(NULL);
+                tm_info = localtime(&t);
+                strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
+                fprintf(stdout, "%s: ", time_buf);
+            }
         }
 
         is_startline = false;
