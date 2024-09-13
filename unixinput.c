@@ -611,7 +611,7 @@ static const char usage_str[] = "\n"
         "  -x         : CW: Disable auto threshold detection\n"
         "  -y         : CW: Disable auto timing detection\n"
         "  --timestamp: Add a time stamp in front of every printed line\n"
-        "  --utc      : Use UTC instead of local timestamp\n"
+        "  --iso-8601 : Use UTC timestamp in ISO 8601 format that includes microseconds\n"
         "  --label    : Add a label to the front of every printed line\n"
         "   Raw input requires one channel, 16 bit, signed integer (platform-native)\n"
         "   samples at the demodulator's input sampling rate, which is\n"
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
     static struct option long_options[] =
       {
         {"timestamp", no_argument, &timestamp, 1},
-        {"utc", no_argument, &utc, 1},
+        {"iso-8601", no_argument, &utc, 1},
         {"label", required_argument, NULL, 'l'},
         {"charset", required_argument, NULL, 'C'},
         {0, 0, 0, 0}
