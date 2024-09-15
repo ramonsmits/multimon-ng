@@ -91,7 +91,7 @@ static int integer_only = true;
 static bool dont_flush = false;
 static bool is_startline = true;
 static int timestamp = 0;
-static int utc = 0;
+static int iso8601 = 0;
 static char *label = NULL;
 
 extern bool fms_justhex;
@@ -132,7 +132,7 @@ void _verbprintf(int verb_level, const char *fmt, ...)
             fprintf(stdout, "%s: ", label);
         
         if (timestamp) {
-            if(utc)
+            if(iso8601)
             {
                 struct timespec ts;
                 timespec_get(&ts, TIME_UTC);
@@ -633,6 +633,8 @@ int main(int argc, char *argv[])
     static struct option long_options[] =
       {
         {"timestamp", no_argument, &timestamp, 1},
+        {"flex-no-ts", no_argument, &flex_disable_timestamp, 1},
+        {"iso-8601", no_argument, &iso8601, 1},
         {"label", required_argument, NULL, 'l'},
         {"charset", required_argument, NULL, 'C'},
         {0, 0, 0, 0}
