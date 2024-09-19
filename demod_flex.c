@@ -403,6 +403,9 @@ static void read_2fsk(struct Flex * flex, unsigned int sym, unsigned int * dat) 
 
 int estimatedPassedHourlySeconds = 0;
 int lastTimeseconds = -1;
+int estimatedOffset = 0;
+
+int days, hours, minutes, seconds;
 
 static int decode_fiw(struct Flex * flex) {
   if (flex==NULL) return -1;
@@ -443,12 +446,12 @@ static int decode_fiw(struct Flex * flex) {
     lastTimeseconds = timeseconds;
     if(isHourlyRollover) estimatedPassedHourlySeconds += 3600;
 
-    int estimatedOffset = estimatedPassedHourlySeconds + timeseconds;
+    estimatedOffset = estimatedPassedHourlySeconds + timeseconds;
 
-    int seconds = estimatedOffset;
-    int days = seconds/86400; seconds -= 86400*days;
-    int hours = seconds/3600; seconds -= 3600*hours;
-    int minutes = seconds/60; seconds -= 60*minutes;
+    seconds = estimatedOffset;
+    days = seconds/86400; seconds -= 86400*days;
+    hours = seconds/3600; seconds -= 3600*hours;
+    minutes = seconds/60; seconds -= 60*minutes;
 
     verbprintf(2, "FLEX: FrameInfoWord: cycleno=%02i frameno=%03i fix3=0x%02x time=%02i:%02i offset=%i.%02i:%02i:%02i\n",
         flex->FIW.cycleno,
@@ -630,8 +633,12 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
         }
         else
         {
-          pt_offset = sprintf(pt_out, "FLEX|%04i-%02i-%02i %02i:%02i:%02i|%i/%i/%c/%c|%02i.%03i|%09lld",
-                        gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
+          pt_offset = sprintf(pt_out,
+                        //"FLEX|%i|%i/%i/%c/%c|%02i.%03i|%09lld",
+                        "FLEX|%i.%02i:%02i:%02i|%i/%i/%c/%c|%02i.%03i|%09lld",
+          
+                        //gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
+                        days, hours, minutes, seconds,
                         flex->Sync.baud, flex->Sync.levels, frag_flag, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
         }
 
