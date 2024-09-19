@@ -104,3 +104,18 @@ qmake multimon-ng.pro PREFIX=/usr/local
 make
 make install INSTALL_ROOT=/
 ```
+
+## Docker
+
+Build the container:
+
+```
+docker buildx build --tag ramonsmits/multimon-ng:latest .
+```
+
+### Run
+
+
+```
+docker run -it -v R:\test\missing.raw:/.raw ramonsmits/multimon-ng -t raw -a FLEX -n /.raw
+```
