@@ -93,6 +93,7 @@ static bool is_startline = true;
 static int timestamp = 0;
 static int iso8601 = 0;
 static char *label = NULL;
+static bool color = true;
 
 extern bool fms_justhex;
 
@@ -126,6 +127,13 @@ void _verbprintf(int verb_level, const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
 
+    if(0!=verb_level&&color){
+        if(1==verb_level)       fprintf(stdout, "\e[33m"); // Yellow
+        else if(2==verb_level)  fprintf(stdout, "\e[36m"); // Cyan
+        else if(3==verb_level)  fprintf(stdout, "\e[32m"); // Green
+        else                    fprintf(stdout, "\e[34m"); // Blue
+    }
+
     if (is_startline)
     {
         if (label != NULL)
@@ -155,7 +163,11 @@ void _verbprintf(int verb_level, const char *fmt, ...)
     if (NULL != strchr(fmt,'\n')) /* detect end of line in stream */
         is_startline = true;
 
+
     vfprintf(stdout, fmt, args);
+
+    if(0!=verb_level&&color) fprintf(stdout, "\e[0m");
+
     if(!dont_flush)
         fflush(stdout);
     va_end(args);
@@ -610,7 +622,7 @@ static const char usage_str[] = "\n"
         "  -x           : CW: Disable auto threshold detection\n"
         "  -y           : CW: Disable auto timing detection\n"
         "  --timestamp  : Add a time stamp in front of every printed line\n"
-        "  --iso-8601   : Use UTC timestamp in ISO 8601 format that includes microseconds\n"
+        "  --iso8601    : Use UTC timestamp in ISO 8601 format that includes microseconds\n"
         "  --label      : Add a label to the front of every printed line\n"
         "  --flex-no-ts : FLEX: Do not add a timestamp to the FLEX demodulator output\n"
         "\n"
@@ -630,11 +642,14 @@ int main(int argc, char *argv[])
     unsigned int overlap = 0;
     char *input_type = "hw";
 
+    char *no_color = getenv("NO_COLOR");
+    if (no_color != NULL && no_color[0] != '\0') color = false;
+
     static struct option long_options[] =
       {
         {"timestamp", no_argument, &timestamp, 1},
         {"flex-no-ts", no_argument, &flex_disable_timestamp, 1},
-        {"iso-8601", no_argument, &iso8601, 1},
+        {"iso8601", no_argument, &iso8601, 1},
         {"label", required_argument, NULL, 'l'},
         {"charset", required_argument, NULL, 'C'},
         {0, 0, 0, 0}

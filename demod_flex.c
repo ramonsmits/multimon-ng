@@ -22,9 +22,9 @@
  *      Boston, MA 02110-1301, USA.
  */
 /*
- *  Modification made by Ramon Smits (ramon@ramonsmits.com)
- *   - PR #222 Suppress timestamp with argument `--flex-no-ts` which is useful when comparing output of this and future versions based on the same input file
+ *  Modifications made by Ramon Smits (ramon@ramonsmits.com)
  *   - PR #223 Method `decode_phase` field `flex_groupmessage` moved into for, as it seems that it needs to be determined per page
+ *   - PR #222 Suppress timestamp with argument `--flex-no-ts` which is useful when comparing output of this and future versions based on the same input file
  *  Modification made by Ramon Smits (ramon@ramonsmits.com)
  *   - PR #221 Estimate the total offset based on the estimated passed full cycles
  *  Modification made by bierviltje and implemented by Bruce Quinton (Zanoroy@gmail.com)
