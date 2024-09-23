@@ -125,6 +125,7 @@
 
 int flex_disable_timestamp = 0;
 
+long position=0;
 
 enum Flex_PageTypeEnum {
   FLEX_PAGETYPE_SECURE,
@@ -301,6 +302,7 @@ static int bch3121_fix_errors(struct Flex * flex, uint32_t * data_to_fix, char P
     /*Count the number of fixed errors*/
     int fixed=count_bits(flex, (*data_to_fix & 0x7FFFFFFF) ^ data);
     if (fixed>0) {
+      verbprintf(4, "[%10i]", position);
       verbprintf(3, "FLEX: Phase %c Fixed %i errors @ 0x%08x  (0x%08x -> 0x%08x)\n", PhaseNo, fixed, (*data_to_fix&0x7FFFFFFF) ^ data, (*data_to_fix&0x7FFFFFFF), data );
     }
 
@@ -308,6 +310,7 @@ static int bch3121_fix_errors(struct Flex * flex, uint32_t * data_to_fix, char P
     *data_to_fix=data;
 
   } else {
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: Phase %c Data corruption - Unable to fix errors.\n", PhaseNo);
   }
 
@@ -392,6 +395,7 @@ static void decode_mode(struct Flex * flex, unsigned int sync_code) {
   }
   
   if(x==0){
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: Sync Code not found, defaulting to 1600bps 2FSK\n");
   }
 }
@@ -414,6 +418,7 @@ static int decode_fiw(struct Flex * flex) {
   int decode_error = bch3121_fix_errors(flex, &fiw, 'F');
 
   if (decode_error) {
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: Unable to decode FIW, too much data corruption\n");
     return 1;
   }
@@ -454,6 +459,7 @@ static int decode_fiw(struct Flex * flex) {
     hours = seconds/3600; seconds -= 3600*hours;
     minutes = seconds/60; seconds -= 60*minutes;
 
+    verbprintf(4, "[%10i]", position);
     verbprintf(2, "FLEX: FrameInfoWord: cycleno=%02i frameno=%03i fix3=0x%02x time=%02i:%02i offset=%i.%02i:%02i:%02i\n",
         flex->FIW.cycleno,
         flex->FIW.frameno,
@@ -473,6 +479,7 @@ static int decode_fiw(struct Flex * flex) {
       if(flex->GroupHandler.GroupFrame[g] >= 0)
       {
         int Reset = 0;
+        verbprintf(4, "[%10i]", position);
         verbprintf(4, "Flex: GroupBit %i, FrameNo: %i, Cycle No: %i target Cycle No: %i\n", g, flex->GroupHandler.GroupFrame[g], flex->GroupHandler.GroupCycle[g], (int)flex->FIW.cycleno); 
         // Now lets check if its expected in this frame..
         if((int)flex->FIW.cycleno == flex->GroupHandler.GroupCycle[g])
@@ -508,6 +515,7 @@ static int decode_fiw(struct Flex * flex) {
                       int endpoint = flex->GroupHandler.GroupCodes[g][CAPCODES_INDEX];
           if(REPORT_GROUP_CODES > 0)
           {
+            verbprintf(4, "[%10i]", position);
             verbprintf(3,"FLEX: Group messages seem to have been missed; Groupbit: %i; Total Capcodes: %i; Clearing Data; Capcodes: ", g, endpoint);
           }
           
@@ -515,6 +523,7 @@ static int decode_fiw(struct Flex * flex) {
           {
             if(REPORT_GROUP_CODES == 0)
             {
+              verbprintf(4, "[%10i]", position);
               verbprintf(3,"FLEX: Group messages seem to have been missed; Groupbit: %i; Clearing data; Capcode: [%09lld]\n", g, flex->GroupHandler.GroupCodes[g][capIndex]);
             }
             else
@@ -541,6 +550,7 @@ static int decode_fiw(struct Flex * flex) {
                 }
     return 0;
   } else {
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: Bad Checksum 0x%x\n", checksum);
 
     return 1;
@@ -549,6 +559,7 @@ static int decode_fiw(struct Flex * flex) {
 
 static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char PhaseNo, int mw1, int mw2, int flex_groupmessage) {
         if (flex==NULL) return;
+        verbprintf(4, "[%10i]", position);
         verbprintf(3, "FLEX: Parse Alpha Numeric\n");
 
         int i;
@@ -651,6 +662,7 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
                 int endpoint = flex->GroupHandler.GroupCodes[groupbit][CAPCODES_INDEX];
                 for(int g = 1; g <= endpoint;g++)
                 {
+                        verbprintf(4, "[%10i]", position);
                         verbprintf(1, "FLEX Group message output: Groupbit: %i Total Capcodes; %i; index %i; Capcode: [%09lld]\n", groupbit, endpoint, g, flex->GroupHandler.GroupCodes[groupbit][g]);
                         pt_offset += sprintf(pt_out + pt_offset, " %09lld", flex->GroupHandler.GroupCodes[groupbit][g]);
                 }
@@ -661,6 +673,7 @@ static void parse_alphanumeric(struct Flex * flex, unsigned int * phaseptr, char
                 flex->GroupHandler.GroupCycle[groupbit] = -1;
         } 
         pt_offset += sprintf(pt_out + pt_offset, "|ALN|%s\n", message);
+        verbprintf(4, "[%10i]", position);
         verbprintf(0, "%s", pt_out);
 }
 
@@ -678,11 +691,13 @@ static void parse_numeric(struct Flex * flex, unsigned int * phaseptr, char Phas
 
   if(flex_disable_timestamp)
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX|%i/%i/%c|%02i.%03i|[%09lld]|NUM ",
         flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
   }
   else
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX: %04i-%02i-%02i %02i:%02i:%02i %i/%i/%c %02i.%03i [%09lld] NUM ",
         gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
         flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
@@ -747,11 +762,13 @@ static void parse_tone_only(struct Flex * flex, unsigned int * phaseptr, char Ph
 
   if(flex_disable_timestamp)
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX|%i/%i/%c|%02i.%03i|[%09lld]|TON ",
       flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
   }
   else
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX: %04i-%02i-%02i %02i:%02i:%02i %i/%i/%c %02i.%03i [%09lld] TON ",
       gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
       flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
@@ -789,11 +806,13 @@ static void parse_unknown(struct Flex * flex, unsigned int * phaseptr, char Phas
 
   if(flex_disable_timestamp)
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX|%i/%i/%c|%02i.%03i|[%09lld]|UNK",
         flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
   }
   else
   {
+    verbprintf(4, "[%10i]", position);
     verbprintf(0,  "FLEX: %04i-%02i-%02i %02i:%02i:%02i %i/%i/%c %02i.%03i [%09lld] UNK",
         gmt->tm_year+1900, gmt->tm_mon+1, gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec,
         flex->Sync.baud, flex->Sync.levels, PhaseNo, flex->FIW.cycleno, flex->FIW.frameno, flex->Decode.capcode);
@@ -839,6 +858,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
     int decode_error=bch3121_fix_errors(flex, &phaseptr[i], PhaseNo);
 
     if (decode_error) {
+      verbprintf(4, "[%10i]", position);
       verbprintf(3, "FLEX: Garbled message at block %i\n", i);
 
                         // If the previous frame was a short message then we need to Null out the Group Message pointer
@@ -857,6 +877,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
 
   // Nothing to see here, please move along
   if (biw == 0 || biw == 0x001FFFFF) {
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: Nothing to see here, please move along\n");
     return;
   }
@@ -866,6 +887,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
   int voffset = (biw >> 10) & 0x3f;
   int aoffset = ((biw >> 8) & 0x03) + 1;
 
+  verbprintf(4, "[%10i]", position);
   verbprintf(3, "FLEX: BlockInfoWord: (Phase %c) BIW:%08X AW:%02i-%02i (%i pages)\n", PhaseNo, biw, aoffset, voffset, voffset-aoffset);
 
 
@@ -877,6 +899,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
 
     if (phaseptr[i] == 0x00000000 ||
         phaseptr[i] == 0x001FFFFF) {
+      verbprintf(4, "[%10i]", position);
       verbprintf(3, "FLEX: Idle codewords, invalid address\n");
       continue;       // Idle codewords, invalid address
     }
@@ -885,6 +908,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
     // parse_capcode(flex, phaseptr[i], phaseptr[i+1]); // Older version maybe still needed so I'm not removing it (yet)
     if (flex->Decode.long_address)
     {
+      verbprintf(4, "[%10i]", position);
       verbprintf(4, "FLEX: Found 'Long Address' bit, ignoring as I think this is handled incorrectly at the moment issue#79\n");
       // i++;
     }
@@ -894,10 +918,12 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
           }
 
     if (flex->Decode.capcode > 4297068542ll || flex->Decode.capcode < 0) {    // Invalid address (by spec, maximum address)
+      verbprintf(4, "[%10i]", position);
       verbprintf(3, "FLEX: Invalid address\n");
       continue;
     }
 
+    verbprintf(4, "[%10i]", position);
     verbprintf(3, "FLEX: CAPCODE:%016lx\n", flex->Decode.capcode);
 
     // Parse vector information word for address @ offset 'i'
@@ -922,6 +948,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
         ////////#############################################################################                 
                     flex->GroupHandler.GroupCodes[groupbit][CAPCODES_INDEX]++;
                     int CapcodePlacement = flex->GroupHandler.GroupCodes[groupbit][CAPCODES_INDEX];
+                    verbprintf(4, "[%10i]", position);
                     verbprintf(1, "FLEX: Found Short Instruction, Group bit: %i capcodes in group so far %i, adding Capcode: [%09lld]\n", groupbit, CapcodePlacement, flex->Decode.capcode);
 
                     flex->GroupHandler.GroupCodes[groupbit][CapcodePlacement] = flex->Decode.capcode;
@@ -932,6 +959,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
         if(iAssignedFrame > flex->FIW.frameno)
         {
       flex->GroupHandler.GroupCycle[groupbit] = (int)flex->FIW.cycleno;
+      verbprintf(4, "[%10i]", position);
       verbprintf(4, "FLEX: Message frame is in this cycle: %i\n", flex->GroupHandler.GroupCycle[groupbit]);
 
         }
@@ -945,6 +973,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
       {
         flex->GroupHandler.GroupCycle[groupbit] = (int)flex->FIW.cycleno++;
           }
+      verbprintf(4, "[%10i]", position);
       verbprintf(4, "FLEX: Message frame is in the next cycle: %i\n", flex->GroupHandler.GroupCycle[groupbit]);
         }
 
@@ -956,6 +985,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
     int mw2 = mw1+(len - 1);
 
     if (mw1 == 0 && mw2 == 0){
+      verbprintf(4, "[%10i]", position);
       verbprintf(3, "FLEX: Invalid VIW\n");
       continue;  // Invalid VIW
     }
@@ -967,6 +997,7 @@ static void decode_phase(struct Flex * flex, char PhaseNo) {
                 // Check if this is an alpha message
                 if (is_alphanumeric_page(flex)) { 
           if (mw1 > 87 || mw2 > 87){
+        verbprintf(4, "[%10i]", position);
         verbprintf(3, "FLEX: Invalid Offsets\n");
         continue;       // Invalid offsets
       }
@@ -1139,6 +1170,7 @@ static void report_state(struct Flex * flex) {
         break;
 
     }
+    verbprintf(4, "[%10i]", position);
     verbprintf(1, "FLEX: State: %s\n", state);
   }
 }
@@ -1167,9 +1199,11 @@ static void flex_sym(struct Flex * flex, unsigned char sym) {
           if (flex->Sync.baud!=0 && flex->Sync.levels!=0) {
             flex->State.Current=FLEX_STATE_FIW;
 
+            verbprintf(4, "[%10i]", position);
             verbprintf(2, "FLEX: SyncInfoWord: sync_code=0x%04x baud=%i levels=%i polarity=%s zero=%f envelope=%f symrate=%f\n",
                 sync_code, flex->Sync.baud, flex->Sync.levels, flex->Sync.polarity?"NEG":"POS", flex->Modulation.zero, flex->Modulation.envelope, flex->Modulation.symbol_rate);
           } else {
+            verbprintf(4, "[%10i]", position);
             verbprintf(2, "FLEX: Unknown Sync code = 0x%04x\n", sync_code);
             flex->State.Current=FLEX_STATE_SYNC1;
           }
@@ -1310,6 +1344,7 @@ static int buildSymbol(struct Flex * flex, double sample) {
                 if (phasepercent > 10 && phasepercent < 90) {
                         flex->Demodulator.nonconsec++;
                         if (flex->Demodulator.nonconsec>20 && flex->Demodulator.locked) {
+                                verbprintf(4, "[%10i]", position);
                                 verbprintf(1, "FLEX: Synchronisation Lost\n");
                                 flex->Demodulator.locked = 0;
                         }
@@ -1369,6 +1404,7 @@ static void Flex_Demodulate(struct Flex * flex, double sample) {
       uint64_t lock_pattern = flex->Demodulator.lock_buf ^ 0x6666666666666666ull;
       uint64_t lock_mask = (1ull << (2 * LOCK_LEN)) - 1;
       if ((lock_pattern&lock_mask) == 0 || ((~lock_pattern)&lock_mask) == 0) {
+        verbprintf(4, "[%10i]", position);
         verbprintf(1, "FLEX: Locked\n");
         flex->Demodulator.locked = 1;
         /*Clear the syncronisation buffer*/
@@ -1381,6 +1417,7 @@ static void Flex_Demodulate(struct Flex * flex, double sample) {
     /*Time out after X periods with no zero crossing*/
     flex->Demodulator.timeout++;
     if (flex->Demodulator.timeout>DEMOD_TIMEOUT) {
+      verbprintf(4, "[%10i]", position);
       verbprintf(1, "FLEX: Timeout\n");
       flex->Demodulator.locked = 0;
     }
@@ -1436,6 +1473,7 @@ static void flex_demod(struct demod_state *s, buffer_t buffer, int length) {
   if (s->l1.flex==NULL) return;
   int i;
   for (i=0; i<length; i++) {
+    ++position;
     Flex_Demodulate(s->l1.flex, buffer.fbuffer[i]);
   }
 }
