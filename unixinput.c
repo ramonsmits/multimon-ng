@@ -93,6 +93,7 @@ static bool is_startline = true;
 static int timestamp = 0;
 static int iso8601 = 0;
 static char *label = NULL;
+static bool color = true;
 
 extern bool fms_justhex;
 
@@ -126,6 +127,13 @@ void _verbprintf(int verb_level, const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
 
+    if(0!=verb_level&&color){
+        if(1==verb_level)       fprintf(stdout, "\e[33m"); // Yellow
+        else if(2==verb_level)  fprintf(stdout, "\e[36m"); // Cyan
+        else if(3==verb_level)  fprintf(stdout, "\e[32m"); // Green
+        else                    fprintf(stdout, "\e[34m"); // Blue
+    }
+
     if (is_startline)
     {
         if (label != NULL)
@@ -155,7 +163,11 @@ void _verbprintf(int verb_level, const char *fmt, ...)
     if (NULL != strchr(fmt,'\n')) /* detect end of line in stream */
         is_startline = true;
 
+
     vfprintf(stdout, fmt, args);
+
+    if(0!=verb_level&&color) fprintf(stdout, "\e[0m");
+
     if(!dont_flush)
         fflush(stdout);
     va_end(args);
@@ -629,6 +641,9 @@ int main(int argc, char *argv[])
     int sample_rate = -1;
     unsigned int overlap = 0;
     char *input_type = "hw";
+
+    char *no_color = getenv("NO_COLOR");
+    if (no_color != NULL && no_color[0] != '\0') color = false;
 
     static struct option long_options[] =
       {
