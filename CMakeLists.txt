@@ -67,7 +67,7 @@ endif( PULSE_AUDIO_SUPPORT )
 if( NOT MSVC )
 	add_definitions( "-std=gnu11" )
 endif( NOT MSVC )
-add_definitions( "-DMAX_VERBOSE_LEVEL=3" "-DCHARSET_UTF8" )
+add_definitions( "-DMAX_VERBOSE_LEVEL=4" "-DCHARSET_UTF8" )
 
 if ( EXISTS "${multimon-ng_SOURCE_DIR}/BCHCode.c" )
 	set( SOURCES ${SOURCES}
